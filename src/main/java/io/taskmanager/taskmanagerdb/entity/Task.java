@@ -1,0 +1,32 @@
+package io.taskmanager.taskmanagerdb.entity;
+
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
+
+
+@Entity
+@Table(name = "tasks")
+public class Task {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String title;
+
+    private String description;
+
+    private boolean completed = false;
+
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    private LocalDateTime updatedAt = LocalDateTime.now();
+
+    @PreUpdate
+    public void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
+
+
+
+}
