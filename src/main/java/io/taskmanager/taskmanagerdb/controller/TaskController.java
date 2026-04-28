@@ -40,6 +40,11 @@ public class TaskController {
         );
     }
 
+    @GetMapping("/analytics/created-per-day")
+    public Map<String, Long> getCreatedPerDay() {
+        return taskService.getTasksPerDay(7);
+    }
+
     @PostMapping
     public Task createTask(@RequestBody Task task) {
         return taskService.createTask(task);

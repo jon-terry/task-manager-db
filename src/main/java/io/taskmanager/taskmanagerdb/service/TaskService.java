@@ -3,7 +3,11 @@ package io.taskmanager.taskmanagerdb.service;
 import io.taskmanager.taskmanagerdb.entity.Task;
 import io.taskmanager.taskmanagerdb.repository.TaskRepository;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class TaskService {
@@ -11,7 +15,7 @@ public class TaskService {
     private final TaskRepository taskRepository;
 
     public long countCompleted() {
-        return taskRepository.countCompletedByTrue();
+        return taskRepository.countByCompletedTrue();
     }
 
     public long countTotal() {
@@ -30,6 +34,29 @@ public class TaskService {
 
     public Task getTaskById(Long id) {
         return taskRepository.findById(id).orElseThrow(() -> new RuntimeException("Task not found!"));
+    }
+
+    public Map<String, Long> getTasksPerDay(int days) {
+        LocalDateTime end = LocalDateTime.now();
+        LocalDateTime start = end.minusDays(days);
+
+        List<Task> tasks = taskRepository.findByCreatedAtBetween(start, end);
+
+        Map<String, Long> result = new LinkedHashMap<>();
+
+        for (int i = days; i >= 0; i--) {
+            String day = end.minusDays(i).toLocalDate().toString();
+            result.put(day, 0L);
+
+        }
+
+        for (Task task : tasks) {
+            String day = task.getCreatedAt().toLocalDate().toString();
+            result.put(day, result.get(day) + 1);
+        }
+
+        return result;
+
     }
 
    public Task createTask(Task task) {
