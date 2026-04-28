@@ -4,6 +4,7 @@ import io.taskmanager.taskmanagerdb.entity.Task;
 import io.taskmanager.taskmanagerdb.service.TaskService;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/tasks")
@@ -23,6 +24,20 @@ public class TaskController {
     @GetMapping("/{id}")
     public Task getTaskById(@PathVariable Long id) {
         return taskService.getTaskById(id);
+    }
+
+    @GetMapping("/analytics/completion")
+    public Map<String, Object> getCompletionStats() {
+        long total = taskService.countTotal();
+        long completed = taskService.countCompleted();
+
+        double percentage = total == 0 ? 0 : (completed * 100.0 ) / total;
+
+        return Map.of(
+                "total", total,
+                "completed", completed,
+                "percentage", percentage
+        );
     }
 
     @PostMapping

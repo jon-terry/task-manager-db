@@ -10,6 +10,16 @@ public class TaskService {
 
     private final TaskRepository taskRepository;
 
+    public long countCompleted() {
+        return taskRepository.countCompletedByTrue();
+    }
+
+    public long countTotal() {
+        return taskRepository.count();
+    }
+
+
+
     public TaskService(TaskRepository taskRepository) {
         this.taskRepository = taskRepository;
     }

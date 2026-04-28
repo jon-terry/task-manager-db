@@ -6,4 +6,6 @@ import io.taskmanager.taskmanagerdb.entity.Task;
 
 public interface TaskRepository extends JpaRepository<Task, Long> {
 
+    long countCompletedByTrue();
+
 }
