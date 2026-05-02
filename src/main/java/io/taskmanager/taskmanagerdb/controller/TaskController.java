@@ -5,6 +5,8 @@ import io.taskmanager.taskmanagerdb.service.TaskService;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -45,6 +47,20 @@ public class TaskController {
     @GetMapping("/analytics/created-per-day")
     public Map<String, Long> getCreatedPerDay() {
         return taskService.getTasksPerDay(7);
+    }
+
+    @GetMapping("/search")
+    public List<Task> searchTasks (
+            @RequestParam(required = false) Boolean completed,
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) String from,
+            @RequestParam(required = false) String to
+    ) {
+        LocalDateTime fromDate = (from != null) ? LocalDateTime.parse(from) : null;
+        LocalDateTime toDate = (to != null) ? LocalDateTime.parse(to) : null;
+
+        return taskService.searchTasks(completed, title, fromDate, toDate);
+
     }
 
     @PostMapping

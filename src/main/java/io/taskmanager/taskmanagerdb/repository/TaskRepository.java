@@ -15,5 +15,9 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 
     List<Task> findByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
 
+    List<Task> findByCompleted(boolean completed);
+
+    List<Task> findByTitleContainingIgnoringCase (String title);
+
 
 }

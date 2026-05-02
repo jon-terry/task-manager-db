@@ -84,4 +84,29 @@ public class TaskService {
         return taskRepository.findAll(pageable);
     }
 
+    public List<Task> searchTasks(Boolean completed, String title, LocalDateTime from, LocalDateTime to ) {
+        // Start with all tasks
+        List<Task> tasks = taskRepository.findAll();
+        if (completed != null) {
+            tasks = tasks.stream()
+                    .filter(t -> t.isCompleted() == completed)
+                    .toList();
+        }
+
+        if (title != null && !title.isBlank()) {
+            tasks = tasks.stream()
+                    .filter(t -> t.getTitle().toLowerCase().contains(title.toLowerCase()))
+                    .toList();
+        }
+
+        if (from != null && to != null) {
+            tasks = tasks.stream()
+                    .filter(t -> !t.getCreatedAt().isBefore(from) && !t.getCreatedAt().isAfter(to))
+                    .toList();
+        }
+
+        return tasks;
+
+    }
+
 }
