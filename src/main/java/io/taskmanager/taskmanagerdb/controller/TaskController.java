@@ -3,6 +3,8 @@ package io.taskmanager.taskmanagerdb.controller;
 import io.taskmanager.taskmanagerdb.entity.Task;
 import io.taskmanager.taskmanagerdb.service.TaskService;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.util.Map;
 
@@ -17,8 +19,8 @@ public class TaskController {
     }
 
     @GetMapping
-    public List<Task> getAllTasks() {
-        return taskService.getAllTasks();
+    public Page<Task> getTasks(Pageable pageable) {
+        return taskService.getTasks(pageable);
     }
 
     @GetMapping("/{id}")

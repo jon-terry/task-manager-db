@@ -3,6 +3,9 @@ package io.taskmanager.taskmanagerdb.service;
 import io.taskmanager.taskmanagerdb.entity.Task;
 import io.taskmanager.taskmanagerdb.repository.TaskRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
@@ -75,6 +78,10 @@ public class TaskService {
 
     public void deleteTask(Long id) {
         taskRepository.deleteById(id);
+    }
+
+    public Page<Task> getTasks(Pageable pageable) {
+        return taskRepository.findAll(pageable);
     }
 
 }
