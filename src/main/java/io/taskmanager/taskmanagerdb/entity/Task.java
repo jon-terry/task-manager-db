@@ -1,6 +1,8 @@
 package io.taskmanager.taskmanagerdb.entity;
 
 import jakarta.persistence.*;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
@@ -25,6 +27,8 @@ public class Task {
     private String description;
 
     private boolean completed = false;
+
+    private LocalDate dueDate;
 
     private LocalDateTime createdAt = LocalDateTime.now();
 
