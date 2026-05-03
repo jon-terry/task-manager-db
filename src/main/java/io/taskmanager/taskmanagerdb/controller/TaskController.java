@@ -56,8 +56,20 @@ public class TaskController {
             @RequestParam(required = false) String from,
             @RequestParam(required = false) String to
     ) {
-        LocalDateTime fromDate = (from != null) ? LocalDateTime.parse(from) : null;
-        LocalDateTime toDate = (to != null) ? LocalDateTime.parse(to) : null;
+        LocalDateTime fromDate = null;
+        LocalDateTime toDate = null;
+
+        try {
+            if (from != null && !from.isBlank()) {
+                fromDate = LocalDateTime.parse(from);
+            }
+            if (to != null && !to.isBlank()) {
+                toDate = LocalDateTime.parse(to);
+            }
+
+        } catch (Exception ignored) {
+            // Do not throw during schema generation
+        }
 
         return taskService.searchTasks(completed, title, fromDate, toDate);
 
