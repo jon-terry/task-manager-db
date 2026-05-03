@@ -1,7 +1,12 @@
 package io.taskmanager.taskmanagerdb.service;
 
+import io.taskmanager.taskmanagerdb.dto.TaskRequestDTO;
+import io.taskmanager.taskmanagerdb.dto.TaskResponseDTO;
 import io.taskmanager.taskmanagerdb.entity.Task;
+import io.taskmanager.taskmanagerdb.mapper.TaskMapper;
 import io.taskmanager.taskmanagerdb.repository.TaskRepository;
+import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,9 +18,15 @@ import java.util.List;
 import java.util.Map;
 
 @Service
+@RequiredArgsConstructor
 public class TaskService {
 
     private final TaskRepository taskRepository;
+    private final TaskMapper taskMapper;
+
+    //
+    // ANALYTICS
+    //
 
     public long countCompleted() {
         return taskRepository.countByCompletedTrue();
@@ -23,20 +34,6 @@ public class TaskService {
 
     public long countTotal() {
         return taskRepository.count();
-    }
-
-
-
-    public TaskService(TaskRepository taskRepository) {
-        this.taskRepository = taskRepository;
-    }
-
-    public List<Task> getAllTasks() {
-        return taskRepository.findAll();
-    }
-
-    public Task getTaskById(Long id) {
-        return taskRepository.findById(id).orElseThrow(() -> new RuntimeException("Task not found!"));
     }
 
     public Map<String, Long> getTasksPerDay(int days) {
@@ -62,27 +59,47 @@ public class TaskService {
 
     }
 
-   public Task createTask(Task task) {
-        return taskRepository.save(task);
-   }
+    //
+    // CRUD : DTO + MapStruct
+    //
 
-    public Task updateTask(Long id, Task updatedTask) {
-        Task existing = getTaskById(id);
+    public TaskResponseDTO createTask(TaskRequestDTO dto) {
+        Task task = taskMapper.toEntity(dto);
+        Task saved = taskRepository.save(task);
+        return taskMapper.toDTO(saved);
+    }
 
-        existing.setTitle(updatedTask.getTitle());
-        existing.setDescription(updatedTask.getDescription());
-        existing.setCompleted(updatedTask.isCompleted());
+    public TaskResponseDTO updateTask(Long id, TaskRequestDTO dto) {
+        Task existing = taskRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Task not found"));
 
-        return taskRepository.save(existing);
+        existing.setTitle(dto.getTitle());
+        existing.setDescription(dto.getDescription());
+        existing.setDueDate(dto.getDueDate());
+        existing.setCompleted(dto.isCompleted());
+
+        Task updated = taskRepository.save(existing);
+        return taskMapper.toDTO(updated);
     }
 
     public void deleteTask(Long id) {
         taskRepository.deleteById(id);
     }
 
-    public Page<Task> getTasks(Pageable pageable) {
-        return taskRepository.findAll(pageable);
+    public TaskResponseDTO getTaskById(Long id) {
+        Task task = taskRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Task not found"));
+        return taskMapper.toDTO(task);
     }
+
+    public Page<TaskResponseDTO> getAllTasks(Pageable pageable) {
+        return taskRepository.findAll(pageable)
+                .map(taskMapper::toDTO);
+    }
+
+    //
+    // SEARCH
+    //
 
     public List<Task> searchTasks(Boolean completed, String title, LocalDateTime from, LocalDateTime to ) {
         // Start with all tasks

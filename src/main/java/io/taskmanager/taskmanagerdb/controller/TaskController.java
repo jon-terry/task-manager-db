@@ -1,94 +1,67 @@
 package io.taskmanager.taskmanagerdb.controller;
 
+import io.taskmanager.taskmanagerdb.dto.*;
 import io.taskmanager.taskmanagerdb.entity.Task;
 import io.taskmanager.taskmanagerdb.service.TaskService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.apache.coyote.Response;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-
+import org.springframework.http.ResponseEntity;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/tasks")
+@RequiredArgsConstructor
 public class TaskController {
 
     private final TaskService taskService;
 
-    public TaskController(TaskService taskService) {
-        this.taskService = taskService;
+    @PostMapping
+    public ResponseEntity<TaskResponseDTO> createTask(@Valid @RequestBody TaskRequestDTO dto) {
+        return ResponseEntity.ok(taskService.createTask(dto));
     }
 
-    @GetMapping
-    public Page<Task> getTasks(Pageable pageable) {
-        return taskService.getTasks(pageable);
+    @PutMapping("/{id}")
+    public ResponseEntity<TaskResponseDTO> updateTask(
+            @PathVariable Long id,
+            @Valid @RequestBody TaskRequestDTO dto) {
+        return ResponseEntity.ok(taskService.updateTask(id, dto));
     }
 
     @GetMapping("/{id}")
-    public Task getTaskById(@PathVariable Long id) {
-        return taskService.getTaskById(id);
+    public Page<TaskResponseDTO> getAllTasks(Pageable pageable) {
+        return taskService.getAllTasks(pageable);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteTask(@PathVariable Long id) {
+        taskService.deleteTask(id);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/analytics/completion")
-    public Map<String, Object> getCompletionStats() {
+    public ResponseEntity<?> getCompletionStats() {
         long total = taskService.countTotal();
         long completed = taskService.countCompleted();
+        double percentage = total == 0 ? 0: (completed * 100.0) / total;
 
-        double percentage = total == 0 ? 0 : (completed * 100.0 ) / total;
-
-        return Map.of(
-                "total", total,
-                "completed", completed,
-                "percentage", percentage
+        return ResponseEntity.ok(
+                java.util.Map.of(
+                        "total", total,
+                        "completed", completed,
+                        "percentage", percentage
+                )
         );
     }
 
     @GetMapping("/analytics/created-per-day")
-    public Map<String, Long> getCreatedPerDay() {
-        return taskService.getTasksPerDay(7);
+    public ResponseEntity<?> getCreatedPerDay() {
+        return ResponseEntity.ok(taskService.getTasksPerDay(7));
     }
-
-    @GetMapping("/search")
-    public List<Task> searchTasks (
-            @RequestParam(required = false) Boolean completed,
-            @RequestParam(required = false) String title,
-            @RequestParam(required = false) String from,
-            @RequestParam(required = false) String to
-    ) {
-        LocalDateTime fromDate = null;
-        LocalDateTime toDate = null;
-
-        try {
-            if (from != null && !from.isBlank()) {
-                fromDate = LocalDateTime.parse(from);
-            }
-            if (to != null && !to.isBlank()) {
-                toDate = LocalDateTime.parse(to);
-            }
-
-        } catch (Exception ignored) {
-            // Do not throw during schema generation
-        }
-
-        return taskService.searchTasks(completed, title, fromDate, toDate);
-
-    }
-
-    @PostMapping
-    public Task createTask(@RequestBody Task task) {
-        return taskService.createTask(task);
-    }
-
-    @PutMapping("/{id}")
-    public Task updateTask(@PathVariable Long id, @RequestBody Task task) {
-        return taskService.updateTask(id, task);
-    }
-
-    @DeleteMapping("/{id}")
-    public void deleteTask(@PathVariable Long id) {
-        taskService.deleteTask(id);
-    }
-
 
 }
